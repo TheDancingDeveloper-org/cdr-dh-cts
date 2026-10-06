@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
 
 from cdr_cts.config import Config
@@ -85,6 +86,26 @@ def test_dependencies_are_pulled_in(adr_key, tmp_path):
     report = run_against(FakeDataHolder(adr_key), adr_key, tmp_path, numbers=[10])
     assert [r.number for r in report.results] == [5, 9, 10]
     assert all(r.status is Status.PASS for r in report.results)
+
+
+def test_missing_arrangement_id_fails_but_scenario_continues(adr_key, tmp_path):
+    dh = FakeDataHolder(adr_key)
+    original = dh.token
+
+    def token_without_arrangement(form):
+        response = original(form)
+        body = response.json() if response.status_code == 200 else None
+        if body and "cdr_arrangement_id" in body:
+            body.pop("cdr_arrangement_id")
+            return httpx.Response(200, json=body)
+        return response
+
+    dh.token = token_without_arrangement
+    result = by_number(run_against(dh, adr_key, tmp_path, numbers=[5]))[5]
+    assert result.status is Status.FAIL
+    titles = {s.title: s.status for s in result.steps}
+    assert titles["First consent: token response has cdr_arrangement_id"] is Status.FAIL
+    assert titles["First consent: Get Customer succeeds (HTTP 200)"] is Status.PASS  # evidence still gathered
 
 
 def test_unreachable_dh_endpoint_fails_the_dh_rather_than_erroring(adr_key, tmp_path):

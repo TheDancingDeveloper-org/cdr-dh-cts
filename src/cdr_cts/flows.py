@@ -53,11 +53,19 @@ def exchange(ctx: ScenarioContext, label: str, request: AuthorizationRequest, co
     response = client.exchange_code(code, request.code_verifier)
     ctx.expect_status(f"{label}: token request succeeds (HTTP 200)", response, {200})
     body = response_json(response)
-    missing = [k for k in ("access_token", "id_token", "cdr_arrangement_id") if not body.get(k)]
+    missing = [k for k in ("access_token", "id_token") if not body.get(k)]
     ctx.check(
-        f"{label}: token response has access_token, id_token and cdr_arrangement_id",
+        f"{label}: token response has access_token and id_token",
         not missing,
         f"missing: {', '.join(missing)}" if missing else "",
+    )
+    # A failure, but not a reason to stop: the remaining steps still produce evidence.
+    # Scenarios that use the arrangement ID fail on their own when it is absent.
+    ctx.check(
+        f"{label}: token response has cdr_arrangement_id",
+        bool(body.get("cdr_arrangement_id")),
+        "missing: cdr_arrangement_id",
+        fatal=False,
     )
     if (request.claims["claims"].get("sharing_duration") or 0) > 0:
         ctx.check(f"{label}: refresh_token issued for an ongoing consent", bool(body.get("refresh_token")))
@@ -69,7 +77,7 @@ def exchange(ctx: ScenarioContext, label: str, request: AuthorizationRequest, co
     return Consent(
         label=label,
         request=request,
-        arrangement_id=body["cdr_arrangement_id"],
+        arrangement_id=body.get("cdr_arrangement_id", ""),
         access_token=body["access_token"],
         refresh_token=body.get("refresh_token", ""),
         id_token_claims=id_claims,
