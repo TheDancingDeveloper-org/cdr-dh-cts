@@ -87,6 +87,14 @@ def test_dependencies_are_pulled_in(adr_key, tmp_path):
     assert all(r.status is Status.PASS for r in report.results)
 
 
+def test_unreachable_dh_endpoint_fails_the_dh_rather_than_erroring(adr_key, tmp_path):
+    dh = FakeDataHolder(adr_key, unreachable=("/authorize",))
+    result = by_number(run_against(dh, adr_key, tmp_path, numbers=[12]))[12]
+    assert result.status is Status.FAIL
+    assert "Data Holder endpoint unreachable" in result.reason
+    assert "/authorize" in result.reason
+
+
 def test_report_redacts_tokens(adr_key, tmp_path):
     report = run_against(FakeDataHolder(adr_key), adr_key, tmp_path, numbers=[5])
     # No compact JWS (request objects, ID tokens, assertions) leaks into the report.

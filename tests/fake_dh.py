@@ -33,11 +33,20 @@ def _error(status: int, error: str) -> httpx.Response:
 
 
 class FakeDataHolder:
-    def __init__(self, adr_key: jose.SigningKey, client_id: str = "fake-client", *, lenient: bool = False) -> None:
+    def __init__(
+        self,
+        adr_key: jose.SigningKey,
+        client_id: str = "fake-client",
+        *,
+        lenient: bool = False,
+        unreachable: tuple[str, ...] = (),
+    ) -> None:
         self.key = jose.SigningKey.generate("PS256")
         self.adr_jwks = jose.jwks([adr_key])
         self.client_id = client_id
         self.lenient = lenient
+        #: Paths whose connections are refused, as if the advertised host did not resolve.
+        self.unreachable = unreachable
         self.pushed: dict[str, dict] = {}
         self.codes: dict[str, dict] = {}
         self.tokens: dict[str, dict] = {}
@@ -74,6 +83,8 @@ class FakeDataHolder:
     # ------------------------------------------------------------------ dispatch
 
     def handle(self, request: httpx.Request) -> httpx.Response:
+        if request.url.path in self.unreachable:
+            raise httpx.ConnectError("[Errno -2] Name or service not known", request=request)
         route = (request.method, request.url.path)
         form = {k: v[0] for k, v in parse_qs(request.content.decode()).items()} if request.method == "POST" else {}
         if route == ("GET", "/.well-known/openid-configuration"):

@@ -90,6 +90,15 @@ def run_scenario(ctx: ScenarioContext, cls: type[Scenario]) -> ScenarioResult:
             result.status, result.reason = Status.SKIP, str(exc)
         except StepFailed:
             result.status = Status.FAIL
+        except httpx.TransportError as exc:
+            # The DH did not answer an endpoint it is required to serve: the CTS fails the DH.
+            # (Mock-ecosystem failures arrive as CtsError and stay ERROR.)
+            try:
+                url = str(exc.request.url)
+            except RuntimeError:  # httpx raises when the request was never attached
+                url = "unknown URL"
+            result.status = Status.FAIL
+            result.reason = f"Data Holder endpoint unreachable: {url} ({type(exc).__name__}: {exc})"
         except (CtsError, httpx.HTTPError) as exc:
             result.status, result.reason = Status.ERROR, f"{type(exc).__name__}: {exc}"
         except Exception as exc:  # noqa: BLE001 — a harness bug: report it, keep running the plan
