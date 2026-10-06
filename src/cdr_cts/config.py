@@ -66,7 +66,11 @@ class AdrConfig:
     brand_name: str = "CTS Harness Brand"
     software_product_id: str = "8a2e7c4d-0000-4000-8000-00000000c001"
     software_product_name: str = "CTS Harness Software Product"
+    #: Scopes the software product holds (the SSA ``scope`` claim).
     scope: str = "openid profile common:customer.basic:read cdr:registration"
+    #: Scopes requested in authorisation requests. Never ``cdr:registration``: that scope is
+    #: only for client-credentials access to the DCR endpoints, not for consumer consent.
+    authorization_scope: str = "openid profile common:customer.basic:read"
     #: ``sharing_duration`` in seconds; > 0 makes the consent ongoing (refresh token issued).
     sharing_duration: int = 7776000
     acr: str = "urn:cds.au:cdr:2"

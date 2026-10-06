@@ -135,6 +135,9 @@ class FakeDataHolder:
             claims = jose.verify(form.get("request", ""), self.adr_jwks)
         except jose.JoseError:
             return _error(400, "invalid_request_object")
+        if "cdr:registration" in claims.get("scope", "").split():
+            # A consumer never consents to the DCR-management scope.
+            return _error(400, "invalid_scope")
         request_uri = f"urn:ietf:params:oauth:request_uri:{secrets.token_urlsafe(16)}"
         self.pushed[request_uri] = claims
         return _json(201, {"request_uri": request_uri, "expires_in": 90})

@@ -24,7 +24,8 @@ ecosystem:
 adr:
   keys_dir: ../keys        # adr.pem (and register.pem for the mock); `cdr-cts keys init ../keys`
   software_product_id: 8a2e7c4d-0000-4000-8000-00000000c001
-  scope: openid profile common:customer.basic:read cdr:registration
+  scope: openid profile common:customer.basic:read cdr:registration   # SSA scope
+  authorization_scope: openid profile common:customer.basic:read      # consent requests (never cdr:registration)
   sharing_duration: 7776000
   acr: urn:cds.au:cdr:2
   client_id: ""            # set to reuse a client the DH already registered; empty = scenario 4 registers

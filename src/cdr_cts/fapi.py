@@ -346,7 +346,7 @@ class FapiClient:
             "response_type": "code",
             "response_mode": "jwt",
             "redirect_uri": self.config.redirect_uri,
-            "scope": scope or self.config.adr.scope,
+            "scope": scope or self.config.adr.authorization_scope,
             "state": state,
             "nonce": nonce,
             "code_challenge": challenge,
