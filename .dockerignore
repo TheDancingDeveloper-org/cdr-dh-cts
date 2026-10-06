@@ -1,0 +1,10 @@
+.git
+.venv
+venv
+out
+keys
+secrets
+config/config.yaml
+**/__pycache__
+**/*.pyc
+.pytest_cache

@@ -1,0 +1,9 @@
+# Normalise line endings; container-executed files must stay LF even on Windows
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile* text eol=lf
+*.png binary
+*.pdf binary

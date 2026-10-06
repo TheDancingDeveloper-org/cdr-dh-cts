@@ -1,0 +1,77 @@
+# CDR Conformance Test Suite — Data Holder test plan 5.3.0
+# Source: CTS Data Holder Technical Guidance 5.3.0 (22 July 2026), aligned to CDS 1.36.0.
+# tests/test_registry.py checks the implemented scenarios against this file.
+test_plan: "5.3.0"
+cds_version: "1.36.0"
+guidance: "CTS Data Holder Technical Guidance 5.3.0, 22 July 2026"
+scenarios:
+  - number: 1
+    id: discovery-document
+    title: Discovery Document
+    section: "3.4"
+    endpoints: [discovery]
+  - number: 2
+    id: infosec-endpoints-mtls
+    title: Ensure Infosec Endpoints Using MTLS
+    section: "3.5"
+    endpoints: [registration]
+  - number: 3
+    id: ssa-validation
+    title: Ensure SSA Validation
+    section: "3.6"
+    endpoints: [registration, register_jwks]
+  - number: 4
+    id: create-client-registration
+    title: Create Client Registration
+    section: "3.7"
+    endpoints: [discovery, registration, register_jwks, adr_jwks]
+  - number: 5
+    id: first-consent
+    title: First Consent
+    section: "3.8"
+    endpoints: [par, authorisation, token, introspection, get_customer]
+  - number: 6
+    id: holder-of-key
+    title: Holder Of Key Resource Requests
+    section: "3.9"
+    endpoints: [get_customer]
+  - number: 7
+    id: second-consent
+    title: Second Consent
+    section: "3.10"
+    endpoints: [par, authorisation, token, get_customer]
+  - number: 8
+    id: dr-initiated-arrangement-revocation
+    title: Data Recipient Initiated Arrangement Revocation
+    section: "3.11"
+    endpoints: [arrangement_revocation, introspection, token]
+  - number: 9
+    id: amending-existing-consent
+    title: Amending Existing Consent
+    section: "3.12"
+    endpoints: [par, authorisation, token, get_customer]
+  - number: 10
+    id: dr-initiated-token-revocation
+    title: Data Recipient Initiated Token Revocation
+    section: "3.13"
+    endpoints: [token_revocation, get_customer, token]
+  - number: 11
+    id: dh-initiated-arrangement-revocation
+    title: Data Holder Initiated Arrangement Revocation
+    section: "3.14"
+    endpoints: [par, authorisation, token, adr_arrangement_revocation]
+  - number: 12
+    id: client-assertion-data
+    title: Ensure Client Assertion Data in Requests
+    section: "3.15"
+    endpoints: [par, authorisation, token]
+  - number: 13
+    id: retrieve-update-client-registration
+    title: Retrieve and Update Client Registration
+    section: "3.16"
+    endpoints: [token, registration]
+  - number: 14
+    id: removed-software-product
+    title: Removed Software Product
+    section: "3.17"
+    endpoints: [par, authorisation, token, get_customer, register_status, arrangement_revocation]

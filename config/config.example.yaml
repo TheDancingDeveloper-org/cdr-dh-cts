@@ -1,0 +1,67 @@
+# cdr-dh-cts configuration. Copy to config/config.yaml (ignored by git) and edit.
+# Relative paths resolve against this file's directory; ${VAR} expands from the environment.
+
+plan: "5.3.0"
+# Identifies the DH brand in the mock's URLs, as the CTS Conformance ID does.
+conformance_id: "00000000-0000-4000-8000-000000000000"
+industry: banking          # banking | energy | all  (Register path segment)
+mtls_edge: true            # the DH enforces mTLS on its secured endpoints
+out_dir: ../out
+
+dh:
+  discovery_url: https://dh.example.com/.well-known/openid-configuration
+  resource_base_url: https://mtls.dh.example.com/cds-au/v1
+  get_customer_path: /common/customer
+  get_customer_version: "1"
+
+ecosystem:
+  # How the DH reaches the mock Register and simulated ADR. Must be reachable FROM the DH;
+  # most DHs also require HTTPS here (run the mock with --tls-cert/--tls-key or behind a proxy).
+  public_base_url: https://cts-ecosystem.example.com
+  # How the harness reaches the mock's admin API.
+  admin_url: http://mock-ecosystem:8080
+
+adr:
+  keys_dir: ../keys        # adr.pem (and register.pem for the mock); `cdr-cts keys init ../keys`
+  software_product_id: 8a2e7c4d-0000-4000-8000-00000000c001
+  scope: openid profile common:customer.basic:read cdr:registration
+  sharing_duration: 7776000
+  acr: urn:cds.au:cdr:2
+  client_id: ""            # set to reuse a client the DH already registered; empty = scenario 4 registers
+  assertion_audience: endpoint   # endpoint | issuer
+
+tls:
+  client:                  # CDR client certificate, bound to issued tokens
+    cert: ../secrets/adr-client.pem
+    key: ../secrets/adr-client.key
+  ca_bundle: ../secrets/dh-ca.pem
+  verify: true
+  alternate_client:        # scenario 6: a second, valid CDR certificate
+    cert: ""
+    key: ""
+  expired_client:          # scenario 2 negative certificates
+    cert: ""
+    key: ""
+  self_signed_client:
+    cert: ""
+    key: ""
+  revoked_client:
+    cert: ""
+    key: ""
+
+authorization:
+  # direct_redirect: the DH's test login completes without interaction.
+  # ecosystem_callback: print the URL for an operator and wait for the redirect at the mock.
+  adapter: cdr_cts.authorize:direct_redirect
+  options: {}
+
+hooks:
+  # module:function(arrangement_id, options) that makes the DH revoke an arrangement (scenario 11).
+  dh_revoke_arrangement: ""
+  options: {}
+
+timeouts:
+  http: 30
+  register_poll: 300       # CTS allows the DH 5 minutes to notice a status change
+  dh_action: 300
+  authorization: 300

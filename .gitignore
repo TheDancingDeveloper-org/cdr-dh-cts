@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration, keys and certificates — never commit real material
+config/config.yaml
+config/*.local.yaml
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+!tests/fixtures/**/*.pem
+
+# Harness output
+out/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

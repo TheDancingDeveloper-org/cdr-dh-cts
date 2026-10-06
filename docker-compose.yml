@@ -1,0 +1,59 @@
+# Mock ecosystem (long-running) + harness (one-shot).
+#
+#   docker compose up -d --build mock-ecosystem
+#   docker compose run --rm harness run --config /work/config/config.yaml
+#
+# The DH under test must reach the mock at ecosystem.public_base_url. To test a DH running
+# in another Compose project, attach both services to that project's network (see README).
+
+name: cdr-dh-cts
+
+x-image: &image
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  image: cdr-dh-cts:local
+
+services:
+  keys:
+    <<: *image
+    command: ["keys", "init", "/work/keys"]
+    volumes:
+      - cts-keys:/work/keys
+    restart: "no"
+
+  mock-ecosystem:
+    <<: *image
+    command: ["mock", "--host", "0.0.0.0", "--port", "8080", "--keys-dir", "/work/keys"]
+    depends_on:
+      keys:
+        condition: service_completed_successfully
+    environment:
+      CDR_MOCK_CONFORMANCE_ID: ${CDR_MOCK_CONFORMANCE_ID:-00000000-0000-4000-8000-000000000000}
+      CDR_MOCK_PUBLIC_BASE_URL: ${CDR_MOCK_PUBLIC_BASE_URL:-http://mock-ecosystem:8080}
+      CDR_MOCK_GENERATE_KEYS: "false"
+    volumes:
+      - cts-keys:/work/keys:ro
+    ports:
+      - "${CDR_MOCK_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/admin/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  harness:
+    <<: *image
+    profiles: ["run"]
+    depends_on:
+      mock-ecosystem:
+        condition: service_healthy
+    volumes:
+      - cts-keys:/work/keys:ro
+      - ./config:/work/config:ro
+      - ./secrets:/work/secrets:ro
+      - ./out:/work/out
+
+volumes:
+  cts-keys:
