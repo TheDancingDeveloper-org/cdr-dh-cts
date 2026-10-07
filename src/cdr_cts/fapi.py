@@ -239,21 +239,15 @@ class FapiClient:
     def revoke(self, token: str, hint: str) -> httpx.Response:
         return self._authenticated_post("revocation_endpoint", {"token": token, "token_type_hint": hint}, None)
 
-    def arrangement_jwt(self, arrangement_id: str) -> str:
-        now = int(time.time())
-        claims = {
-            "cdr_arrangement_id": arrangement_id,
-            "iss": self.require_client_id(),
-            "aud": self.endpoint("cdr_arrangement_revocation_endpoint"),
-            "jti": str(uuid.uuid4()),
-            "iat": now,
-            "exp": now + 300,
-        }
-        return jose.sign(claims, self.key)
-
     def revoke_arrangement(self, arrangement_id: str) -> httpx.Response:
+        """ADR-initiated arrangement revocation at the DH.
+
+        CDS: "Data Holders MUST only support [the] 'CDR Arrangement Form Parameter'
+        method" (cdr_arrangement_id). The cdr_arrangement_jwt method is for the DH
+        calling the ADR's endpoint, not the other way round.
+        """
         return self._authenticated_post(
-            "cdr_arrangement_revocation_endpoint", {"cdr_arrangement_jwt": self.arrangement_jwt(arrangement_id)}, None
+            "cdr_arrangement_revocation_endpoint", {"cdr_arrangement_id": arrangement_id}, None
         )
 
     # ------------------------------------------------------------- dynamic client registration

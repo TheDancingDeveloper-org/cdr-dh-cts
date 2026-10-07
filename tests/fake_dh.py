@@ -215,9 +215,9 @@ class FakeDataHolder:
         return httpx.Response(200)
 
     def revoke_arrangement(self, form: dict) -> httpx.Response:
-        try:
-            arrangement = jose.verify(form.get("cdr_arrangement_jwt", ""), self.adr_jwks)["cdr_arrangement_id"]
-        except (jose.JoseError, KeyError):
+        # CDS: the DH endpoint supports only the cdr_arrangement_id form parameter.
+        arrangement = form.get("cdr_arrangement_id")
+        if not arrangement:
             return _error(400, "invalid_request")
         if not self.arrangements.get(arrangement):
             return _json(422, {"errors": [{"code": "urn:au-cds:error:cds-all:Authorisation/InvalidArrangement"}]})

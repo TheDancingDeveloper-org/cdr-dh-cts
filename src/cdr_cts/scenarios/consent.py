@@ -61,10 +61,13 @@ class AmendingExistingConsent(Scenario):
     def run(self, ctx: ScenarioContext) -> None:
         first = ctx.state["consent.first"]
         amended = establish_consent(ctx, "Amended consent", cdr_arrangement_id=first.arrangement_id)
-        ctx.info(
-            "Amended consent arrangement",
-            "same cdr_arrangement_id kept" if amended.arrangement_id == first.arrangement_id
-            else f"new cdr_arrangement_id {amended.arrangement_id} (was {first.arrangement_id})",
+        # CDS (CDR Arrangement ID): "MUST be static across consents within the one sharing
+        # arrangement (e.g. across consent renewal and re-authorisation)".
+        ctx.check(
+            "Amended consent keeps the cdr_arrangement_id",
+            bool(amended.arrangement_id) and amended.arrangement_id == first.arrangement_id,
+            f"first={first.arrangement_id!r} amended={amended.arrangement_id!r}",
+            fatal=False,
         )
         get_customer_ok(ctx, "Amended consent", amended.access_token)
         if first.refresh_token:
