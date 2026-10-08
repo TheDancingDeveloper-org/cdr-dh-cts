@@ -97,12 +97,33 @@ also require HTTPS there (`cdr-cts mock --tls-cert ... --tls-key ...`, or a TLS
 proxy). To test a DH running in another Compose project, attach the mock to that
 project's network.
 
+## Using it from another project
+
+Pin a release and let Docker build the image straight from the repository; no
+checkout is needed:
+
+```yaml
+services:
+  cts-harness:
+    build:
+      context: https://github.com/TheDancingDeveloper-org/cdr-dh-cts.git#v0.1.0
+      dockerfile: docker/Dockerfile
+    image: cdr-dh-cts:0.1.0
+```
+
+Exit codes: `0` every scenario passed, `1` at least one failed or errored, `2`
+a usage or configuration error.
+
 ## Status
 
-Version 0.1: all 14 scenarios implemented; 7 verified offline against the fake
-DH, the remainder pending a run against a real DH (see the table above and
-`CHANGELOG.md`). Contributions welcome once the
-repo is public — see `CONTRIBUTING.md`.
+Version 0.1.0: all 14 scenarios implemented. Seven are verified offline against
+the fake DH. All 14 have been run end to end against a commercial CDR identity
+stack, and the harness defects that run exposed are fixed (`CHANGELOG.md`).
+Failures that run reported against the Data Holder are left as findings: the
+harness is never relaxed to make a particular product pass.
+
+Contributions are welcome; see [`CONTRIBUTING.md`](CONTRIBUTING.md) and, for AI
+coding agents, [`AGENTS.md`](AGENTS.md).
 
 ## Licence
 

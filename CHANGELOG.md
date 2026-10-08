@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-10-08
 
 First version, targeting DH Test Plan 5.3.0 / CDS 1.36.0 (CTS DH Technical
 Guidance 5.3.0, 22 July 2026).
@@ -25,10 +25,20 @@ Guidance 5.3.0, 22 July 2026).
 - Offline tests run scenarios 1, 5, 7, 8, 9, 10 and 12 against an in-process
   fake DH, and check that a DH accepting malformed client assertions fails 12.
 
+Fixed after the first end-to-end run against a real DH, each against the clause
+the earlier behaviour contradicted:
+
+- An unreachable DH endpoint is a `FAIL` of the DH, not a harness `ERROR`.
+- Authorisation requests ask for the configured `adr.authorization_scope`, not
+  `cdr:registration` (a DCR scope, not a consent scope).
+- A token response without `cdr_arrangement_id` is a non-fatal failed check, so
+  the scenario keeps collecting evidence.
+- Arrangement revocation at the DH sends the `cdr_arrangement_id` form
+  parameter (CDS: Data Holder arrangement revocation endpoint), and amendment
+  checks that the arrangement ID stays the same.
+
 ## Next
 
-1. Run against a real DH (first target: a commercial CDR identity stack) and fix what
-   that finds in scenarios 2–4, 6, 11, 13 and 14.
-2. Extend the fake DH to DCR and the Register poll so 3, 4, 13 and 14 are
+1. Extend the fake DH to DCR and the Register poll so 3, 4, 13 and 14 are
    verified offline too.
-3. A browser-automation authorisation adapter for DHs with interactive login.
+2. A browser-automation authorisation adapter for DHs with interactive login.
